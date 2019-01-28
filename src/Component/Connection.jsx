@@ -1,65 +1,83 @@
-import React, {Component} from 'react';
+import React, { Component} from 'react'
 import axios from 'axios';
 import '../index.css'
 import '../Support/CSS/produk.css'
 
+class Connection extends Component {
+    state = { listCon: [], idSelectedtoEdit: 0}
 
-class Connection extends Component{
-    state = {listConnection: [], selectedEditProductId: 0}
+    componentDidMount() {
+       this.getProdukList();
+      }
 
-    componentDidMount(){
+    getProdukList = () => {
         axios.get('http://localhost:2019/connectionlist')
-        .then((res)=>{
-        this.setState({listConnection:res.data})
+            .then((res) => {
+            console.log(res.data)
+            this.setState({listCon: res.data, idSelectedtoEdit: 0})
+        }).catch((err) => {
+            console.log (err)
         })
     }
-
+            
     onBtnAddClick = () => {
+        var namaMovie = this.refs.namaMovieAdd.value;
+        var namaCategory = this.refs.namaCatAdd.value;
+        
         axios.post('http://localhost:2019/addconnection', {
-            namaMovie: this.refs.AddNamaMovie.value,
-            NamaCategory: this.refs.AddNamaCategory.value,
-                      })
-        .then((res) => {
-            alert("Add Movie Success")
-            this.setState({listCategory:res.data})
+            namaMovie, namaCategory
         })
-        .catch((err) =>{
+        .then((res) => {
+            console.log(res)
+            this.getProdukList()
+        })
+        .catch((err) => {
             console.log(err)
         })
     }
 
     onBtnDeleteClick = (id) => {
-        if(window.confirm('Are you sure to delete?')) {
+        if(window.confirm('Are sure want to delete this item?')){
             axios.delete('http://localhost:2019/deletecategory/' + id)
             .then((res) => {
-                alert('Delete Success');
-                this.setState({ listConnection: res.data })
+                this.getProdukList();
             })
             .catch((err) => {
-                alert('Error')
-                console.log(err);
+                console.log(err)
             })
         }
     }
-    renderConnectionList = () => {
-        var listJSX = this.state.listConnection.map((item) => {
-             
-            return (
-                <tr>
-                    <td>{item.nama}</td>
-                    <td>{item.nama}</td>
-                    <td><input type="button" class="btn btn-danger" value="Delete" onClick={() => this.onBtnDeleteClick(item.id)} /></td>
-                </tr>
-        )})
-        return listJSX;
+   
+    renderBodyProduk = () => {
+        
+        var listJSXProduk = this.state.listCon.map(({ namaMovie, namaCategory }) => {
+            if(namaMovie !== this.state.idSelectedtoEdit ) {
+                return (
+                    <tr>
+                        <td>{namaMovie}</td>
+                        <td>{namaCategory}</td>
+                        <td><input className="btn btn-danger" type="button" value="Delete" onClick={() => this.onBtnDeleteClick(namaMovie)} /></td>
+                    </tr> 
+                    )
+            }
+            
+           
+        })
+        return listJSXProduk;
     }
-    
-    render(){
-        return(
-            <div>
-            <center>
-                <h1>Connection List</h1>
-                <table>
+      
+    render() {
+        return (          
+           
+            <div className="container-fluid">
+            <div className="row" >
+            <div className="col-lg-12 text-center">
+            <h2 className="section-heading text-uppercase">List Category</h2>
+            </div>
+                </div>
+                <center>
+           
+            <table>   
                     <thead>
                         <tr>
                             <th>Nama Movie</th>
@@ -68,21 +86,26 @@ class Connection extends Component{
                         </tr>
                     </thead>
                     <tbody>
-                        {this.renderConnectionList()}
+                        {this.renderBodyProduk()}
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td></td>
-                            <td><input type="text" ref="AddNamaMovie" placeholder="Masukan Nama Movie"/></td>
-                            <td><input type="text" ref="AddNamaCat" placeholder="Masukan Nama Category"/></td>
-                            <td><input type="button" class="btn btn-success" value="Add" onClick={this.onBtnAddClick} /></td>
+                           
+                            <td><select ref="namaMovieAdd" placeholder="Masukkan nama movie"></select></td>
+                            <td><select type="text" ref="namaCatAdd" placeholder="Masukkan nama category"></select></td>
+                            <td><input type="button" className="btn btn-success" value="Add" onClick={this.onBtnAddClick} /></td>
+                           
                         </tr>
                     </tfoot>
                 </table>
-            </center>
+                </center>
+       
             </div>
-        )
+           
+            
+            )
     }
 }
-
+        
+ 
 export default Connection;
